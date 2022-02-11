@@ -7,6 +7,7 @@ import java.io.PrintWriter;
 import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.regex.Pattern;
 
 public class Server {
     InetAddress ipAddress;
@@ -67,7 +68,8 @@ public class Server {
         if(communicationIsOpen){
             writer.println("Hello! You have reached the server. Do you wish to add or subtract?\n" +
                     "For add: write 'add'\n" +
-                    "For subtract: write 'sub'\n");
+                    "For subtract: write 'sub'\n" +
+                    "For exiting: write 'exit'");
         }
         else{
             writer.println("It appears the connection has not been established correctly");
@@ -81,54 +83,58 @@ public class Server {
     public void communicate(){
         try {
             boolean first = true;
-            writer.println("Write 'sub' if you wish to subtract when adding.\n" +
-                    "Write 'add' if you wish to add when subtracting.\n" +
-                    "Write 'exit' if you wish to stop the calculator and see the final result");
             //this is the first line, which should be a 1 or 2
             double result = 0;
             String line = reader.readLine();
-            while (line != null){ //<-- false when the reader closes their connection
+            while (!line.equalsIgnoreCase("exit") && line != null){ //<-- false when the reader closes their connection
                 if(line.equalsIgnoreCase("add")){ //<-- addition
                     try{
+                        writer.println("Write a number ");
                         while(!line.equalsIgnoreCase("sub") && !line.equalsIgnoreCase("exit")){
                             line = reader.readLine();
-                            result += Double.parseDouble(line);
-                            writer.println("Current result: " + result);
-                            line = reader.readLine();
-                            if(line.equalsIgnoreCase("sub") || line.equalsIgnoreCase("exit")){
-                                break; //<--hopefully code will exit and enter subtraction brackets //todo remove?
+
+                            // We break if the user writes 'add' or 'exit'
+                            if(legalExpression(line)){
+                                break;
                             }
+                            if(isNumber(line)){
+                                // Only numbers will get in here
+                                result += Double.parseDouble(line);
+                                writer.println("Current result: " + result);
+                            }
+                            else if (!legalExpression(line)) {
+                                writer.println("You entered an illegal character. Please write a number,'sub' or 'exit ");
+                            }
+                            // we will only enter this branch if the user entered an illegal expression
+                            // todo check for sub?
                         }
                     }catch(Exception e){
                         writer.println("Remember that the calculator can only handle numbers");
                         e.printStackTrace();
                     }
                 }
-                if(line.equalsIgnoreCase("sub")){
+                else if(line.equalsIgnoreCase("sub")){
                     try{
+                        writer.println("Write a number ");
                         while(!line.equalsIgnoreCase("add") && !line.equalsIgnoreCase("exit")){
                             line = reader.readLine();
 
-                            //if true, this is the first number, meaning it should not be subtracted from 0
-                            if(first){
-                                result = Double.parseDouble(line);
-                                writer.println("Current result: " + result);
-                                first = false;
+                            // We break if the user writes 'add' or 'exit'
+                            if(legalExpression(line)){
+                                break;
                             }
-                            //if we have a starting number, we subtract this number
-                            result -= Double.parseDouble(line);
-                            writer.println("Current result: " + result);
-                            //after subtracting, we read the next line
-                            line = reader.readLine();
-
-                            //we break if this line equals "add" or "exit"
+                            // Only numbers will get in here
+                            if(isNumber(line)){
+                                // All subtractions except the first will land here
+                                result -= Double.parseDouble(line);
+                                writer.println("Current result: " + result);
+                            }
                         }
-                        writer.println("The result was :" + result + " :-)");
                     }catch(Exception e){
                         e.printStackTrace();
                     }
                 }
-                if(line.equalsIgnoreCase("exit")){
+                else if(line.equalsIgnoreCase("exit")){
                     writer.println("Final result:" + result + ":-)");
                 }
             }
@@ -151,6 +157,36 @@ public class Server {
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    /**
+     * This method is used to check that input is subject to rules of what the server can handle
+     * OK formatting: 'add', 'sub', 'exit'
+     * Not OK formatting: everything else
+     *
+     * @param line is the user (client) input to check for faults
+     * @return true if line fits OK formatting constrains
+     */
+    public boolean legalExpression(String line) {
+        return line.equalsIgnoreCase("add") ||
+                line.equalsIgnoreCase("sub") ||
+                line.equalsIgnoreCase("exit");
+    }
+
+    /**
+     * Supporting method for higher cohesion in containsFault() method above
+     *
+     * @param line is the client input to check
+     * @return true if line is a number
+     */
+    private boolean isNumber(String line){
+        Pattern pattern = Pattern.compile("-?\\d+(\\.\\d+)?");
+        // if there is nothing inside the line, then we will not bother checking it for numbers
+        if (line == null) {
+            return false;
+        }
+        // If the line is a number, this will return true
+        return pattern.matcher(line).matches();
     }
 
     /**

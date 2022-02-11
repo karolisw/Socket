@@ -40,7 +40,7 @@ public class Client {
         try {
             // If client has added server ip-address, we can proceed with requesting to establish a connection
             clientSocket = new Socket(serverIpAddress, PORTNR);
-            System.out.println("Connection established! :-)");
+            System.out.println("\nConnection established! :-)\n");
 
             // We move forward with initiating our reader and writer
             openCommunication();
@@ -72,6 +72,7 @@ public class Client {
     private void openCommunication() throws IOException {
         writer = new PrintWriter(clientSocket.getOutputStream(),true);
         reader = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
+        scannerReader = new Scanner(System.in);
     }
 
     /**
@@ -83,8 +84,16 @@ public class Client {
     public void communicate() {
         // serverIntro is the server asking the client to add or subtract
         try{
-            String serverIntro = reader.readLine();
-            System.out.println(serverIntro + "\n");
+            String serverIntro1 = reader.readLine();
+            String serverIntro2 = reader.readLine();
+            String serverIntro3 = reader.readLine();
+            String serverIntro4 = reader.readLine();
+
+
+            System.out.println(serverIntro1 + "\n" +
+                               serverIntro2 + "\n" +
+                               serverIntro3 + "\n" +
+                               serverIntro4 + "\n");
 
             // Reads user-text from terminal (either 'add', 'sub' or 'exit') //todo fault-check for other inputs
             String line = scannerReader.nextLine();
@@ -105,7 +114,7 @@ public class Client {
                 writer.println(line);
                 // Receives response from the server
                 String response = reader.readLine();
-                System.out.println("Fra server-program: " + response);
+                System.out.println("From server: " + response + "\n");
                 line = scannerReader.nextLine();
             }
             close();
