@@ -1,6 +1,5 @@
 package ntnu.karolisw.sockets;
 
-import java.io.IOException;
 
 public class Main {
 

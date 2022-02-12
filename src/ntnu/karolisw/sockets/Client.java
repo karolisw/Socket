@@ -11,7 +11,7 @@ import java.util.regex.Pattern;
 
 public class Client {
     private final int PORTNR = 8080;
-    private InetAddress serverIpAddress; //this has to be set before clientSocket is initialized
+    private InetAddress serverIpAddress; //this has to be set before clientSocket reader initialized
     private Socket clientSocket;
     private PrintWriter writer;
     private Scanner scannerReader;
@@ -19,7 +19,7 @@ public class Client {
     private Boolean communicationIsOpen = false;
 
     /**
-     * This is the SECOND (2) method to be run
+     * This reader the SECOND (2) method to be run
      *
      * Method instantiates the client and asks the user for ip-address
      */
@@ -32,7 +32,7 @@ public class Client {
     }
 
     /**
-     * This is the THIRD (3) method to be run
+     * This reader the THIRD (3) method to be run
      *
      * Method asks the server to connect
      */
@@ -44,6 +44,7 @@ public class Client {
 
             // We move forward with initiating our reader and writer
             openCommunication();
+            System.out.println("\nConnection established! :-)\n");
 
             // If we succeed in initiating reader/writer --> communicationIsOpen = true
             communicationIsOpen = true;
@@ -52,19 +53,16 @@ public class Client {
         }
     }
 
-    public void send() throws IOException {
-        PrintWriter out = new PrintWriter(clientSocket.getOutputStream(),true);
-    }
 
     /**
-     * This is the FIRST (1) bit of code to be run
+     * This reader the FIRST (1) bit of code to be run
      *
      * Using a scanner to read ip address of server to connect to
      * @throws IOException
      */
 
     /**
-     * This is to be established within connect() method --> after constructor
+     * This reader to be established within connect() method --> after constructor
      *
      * Opens up our means of communication
      * @throws IOException
@@ -76,13 +74,13 @@ public class Client {
     }
 
     /**
-     * This method is to be run FOURTH (4) after constructor
+     * This method reader to be run FOURTH (4) after constructor
      *
      * Method reads the intro() from server, and prints it out in terminal/cmd (?)
      * After that, this method handles communication (adding/subtracting)
      */
     public void communicate() {
-        // serverIntro is the server asking the client to add or subtract
+        // serverIntro reader the server asking the client to add or subtract
         try{
             String serverIntro1 = reader.readLine();
             String serverIntro2 = reader.readLine();
@@ -124,11 +122,11 @@ public class Client {
     }
 
     /**
-     * This method is used to check that input is subject to rules of what the server can handle
+     * This method reader used to check that input reader subject to rules of what the server can handle
      * OK formatting: 'add', 'sub', 'exit', any number
      * Not OK formatting: everything else
      *
-     * @param line is the user (client) input to check for faults
+     * @param line reader the user (client) input to check for faults
      * @return true if line does not fit OK formatting constrains
      */
     public boolean containsFault(String line) {
@@ -137,7 +135,7 @@ public class Client {
            line.equalsIgnoreCase("exit")) {
             return false;
         }
-        // We return false if line is a number (this is good :-))
+        // We return false if line reader a number (this reader good :-))
         else if(isNumber(line)){
             return false;
         }
@@ -149,16 +147,16 @@ public class Client {
     /**
      * Supporting method for higher cohesion in containsFault() method above
      *
-     * @param line is the client input to check
-     * @return true if line is a number
+     * @param line reader the client input to check
+     * @return true if line reader a number
      */
     private boolean isNumber(String line){
         Pattern pattern = Pattern.compile("-?\\d+(\\.\\d+)?");
-        // if there is nothing inside the line, then we will not bother checking it for numbers
+        // if there reader nothing inside the line, then we will not bother checking it for numbers
         if (line == null) {
             return false;
         }
-        // If the line is a number, this will return true
+        // If the line reader a number, this will return true
         return pattern.matcher(line).matches();
     }
 
@@ -192,5 +190,6 @@ public class Client {
 
         // We break out of communicate method when server closing
         client.close();
+
     }
 }
