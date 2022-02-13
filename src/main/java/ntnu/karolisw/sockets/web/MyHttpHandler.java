@@ -5,8 +5,10 @@ import com.sun.net.httpserver.HttpHandler;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.Arrays;
 import java.util.logging.Logger;
 
+import com.sun.net.httpserver.HttpServer;
 import org.apache.commons.text.StringEscapeUtils;
 
 
@@ -32,7 +34,11 @@ public class MyHttpHandler implements HttpHandler {
             requestParamValue = handleGetRequest(exchange);
             logger.info("Get request received with request parameter: " + requestParamValue + "\n");
         }
+        //todo implement exception handling
         handleResponse(exchange,requestParamValue);
+        // Once the delivery is complete, we close the server...
+        logger.info("Closing server");
+        WebServer.closeServer();
     }
 
     /**
@@ -40,6 +46,8 @@ public class MyHttpHandler implements HttpHandler {
      * Method "getRequestURI()" is an HttpExchange-class method that extracts
              * -the request parameter value contained in the URI
      * URI = Uniform Resource Identifiers --> ex: www.ntnu.no/dataingeniør
+     *
+     * The regex looks like this due to the syntax i have set up for the URI
      * @param httpExchange
      * @return
      */
@@ -47,8 +55,8 @@ public class MyHttpHandler implements HttpHandler {
         return httpExchange.
         getRequestURI()
                 .toString()
-                .split("\\?")[1]
-                .split("=")[1];
+                .split("\\?")[1];
+               // .split("=")[1];
     }
 
     /**
@@ -62,26 +70,34 @@ public class MyHttpHandler implements HttpHandler {
     private void handleResponse(HttpExchange httpExchange, String requestParamValue)  throws  IOException {
         OutputStream outputStream = httpExchange.getResponseBody();
         StringBuilder htmlBuilder = new StringBuilder();
-        htmlBuilder.append("<html>").
-        append("<body>").
-        append("<h1>").
-        append("Hello ")
+        /**
+        htmlBuilder.append("HTTP/1.0 200 OK\n" + "\n")
+                .append("Content-Type: text/html; charset=utf-8); \n")
+         */
+        htmlBuilder.append("<html>")
+                .append("<body>")
+                .append("<h1>")
+                .append("Hello ")
+
                 .append(requestParamValue)
+
                 .append("</h1>")
+                .append("<h3>")
+                .append("This is a test page that could have been a little cooler...")
+                .append("</h3>")
                 .append("</body>")
                 .append("</html>");
 
-        // encode HTML content
-        String htmlResponse = StringEscapeUtils.escapeHtml4(htmlBuilder.toString());
+        // encode HTML content --> this is where the stringbuilder with HTML is converted to actual text on the webpage
+        String htmlResponse = StringEscapeUtils.unescapeHtml4(htmlBuilder.toString());
 
         // this line is a must
         httpExchange.sendResponseHeaders(200, htmlResponse.length());
+        System.out.println("testing\n");
+        System.out.println(httpExchange.getProtocol());
+
         outputStream.write(htmlResponse.getBytes());
         outputStream.flush();
         outputStream.close();
     }
-
-
-
-
 }

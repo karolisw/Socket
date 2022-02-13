@@ -10,6 +10,8 @@ import java.io.PrintWriter;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.Socket;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadPoolExecutor;
 import java.util.logging.Logger;
 
 public class WebServer {
@@ -22,13 +24,14 @@ public class WebServer {
     // ServerSocet used instead of Socket, because ServerSocket instance
     // better encapsulates the passive (waiting) side
     //ServerSocket server;
-    HttpServer server;
+    static HttpServer server;
     // clientSocket reader created to handle incoming connections on the server
     Socket serverSocket;
     PrintWriter writer;
     BufferedReader reader;
     Boolean close = false;
     Boolean communicationIsOpen = false;
+
 
 
     /**
@@ -44,39 +47,15 @@ public class WebServer {
             System.out.println("WebServer created on port 80\n");
             // HttpContext = is a mapping from a path (arg[0]), to the handler (arg[1])
             // The handler is invokes when a client requests to receive the path
-            server.createContext("/test", new MyHttpHandler());
+            server.createContext("/index.html", new MyHttpHandler());
             // The executor is the threadPool to execute the handlers for each request by each client
+            ThreadPoolExecutor threadPoolExecutor = (ThreadPoolExecutor) Executors.newFixedThreadPool(10);
             // Executor == null means that there is no threadPool, and that the main thread will execute
-            server.setExecutor(null);
+            server.setExecutor(threadPoolExecutor);
             server.start();
             logger.info("Server started on port 80");
         } catch (IOException e) {
             e.printStackTrace();
-        }
-    }
-
-    /**
-     * Connect() listens for incoming connect()-requests.
-     * Upon connection, the serverSocket will create a new socket
-     * (serverSocket) in order to handle the incoming connection.
-     * serverSocket will handle communication with clientSocket
-     */
-    public void connect(){
-        try{
-            System.out.println("Listening for connection requests... \n");
-            //serverSocket = server.accept();
-
-            if(serverSocket != null){
-                System.out.println("Server connected!\n");
-                connectSuccess = true;
-                openCommunication();
-                System.out.println("Communication is open :-) \n");
-                // the server now must wait for the client to reply
-            }
-
-        } catch (IOException e) {
-            e.printStackTrace();
-            System.out.println("Error upon connection");
         }
     }
 
@@ -110,6 +89,11 @@ public class WebServer {
         // 4. The server will also return an HTTP-header, followed by the rest of the information
         // 5. The server will close right after sending information to the browser
         WebServer webServer = new WebServer();
+    }
+
+
+    static void closeServer(){
+        server.stop(1);
     }
 
 }
