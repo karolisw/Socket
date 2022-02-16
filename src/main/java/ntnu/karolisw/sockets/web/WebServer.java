@@ -67,7 +67,7 @@ public class WebServer {
         if(connectSuccess){
             httpHeader = "HTTP/1.0 200 OK\n";
         }
-        else httpHeader = "HTTP/10 404 "; //todo write proper header
+        else httpHeader = "HTTP/10 404 ";
     }
 
     private void openCommunication() throws IOException {
@@ -93,7 +93,7 @@ public class WebServer {
 
 
     static void closeServer(){
-        server.stop(1);
+        server.stop(3);
     }
 
 }
